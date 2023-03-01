@@ -36,3 +36,8 @@
 
 # Build Output
 x64/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
