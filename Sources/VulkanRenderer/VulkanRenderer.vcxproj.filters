@@ -23,4 +23,9 @@
     <None Include="shaders\shader.vert" />
     <None Include="shaders\shader.frag" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\golden_dragon.jpg">
+      <Filter>Fichiers de ressources</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
