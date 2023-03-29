@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
-#include "defines.hpp"
 #include <array>
 
 class Vertex

@@ -24,6 +24,7 @@
 
 #include "defines.hpp"
 #include "Vertex.hpp"
+#include "ValidationLayers.hpp"
 
 const std::vector<Vertex> vertices = {
     {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
@@ -34,10 +35,6 @@ const std::vector<Vertex> vertices = {
 
 const std::vector<uint16_t> indices = {
     0, 1, 2, 2, 3, 0
-};
-
-const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation"
 };
 
 const std::vector<const char*> deviceExtensions = {
@@ -105,6 +102,7 @@ private:
 
     // Validation layers
     VkDebugUtilsMessengerEXT debugMessenger;
+    ValidationLayers validationLayers;
 
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device;
@@ -1121,8 +1119,8 @@ private:
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
         if (enableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.validationLayersName.size());
+            createInfo.ppEnabledLayerNames = validationLayers.validationLayersName.data();
         }
         else {
             createInfo.enabledLayerCount = 0;
@@ -1380,7 +1378,7 @@ private:
     }
 
     void createInstance() {
-        if (enableValidationLayers && !checkValidationLayerSupport()) {
+        if (enableValidationLayers && !validationLayers.checkValidationLayerSupport()) {
             throw std::runtime_error("Validation layers request, but not available !");
         }
 
@@ -1402,8 +1400,8 @@ private:
 
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
         if (enableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.validationLayersName.size());
+            createInfo.ppEnabledLayerNames = validationLayers.validationLayersName.data();
 
             populateDebugMessengerCreateInfo(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
@@ -1452,31 +1450,6 @@ private:
         }
 
         return extensions;
-    }
-
-    bool checkValidationLayerSupport() {
-        uint32_t layerCount;
-        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-        std::vector<VkLayerProperties> availableLayers(layerCount);
-        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-        for (const char* layerName : validationLayers) {
-            bool layerFound = false;
-
-            for (const auto& layerProperties : availableLayers) {
-                if (strcmp(layerName, layerProperties.layerName) == 0) {
-                    layerFound = true;
-                    break;
-                }
-            }
-
-            if (!layerFound) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     static std::vector<char> readFile(const std::string& filename) {
