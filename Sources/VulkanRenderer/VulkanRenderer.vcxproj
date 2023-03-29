@@ -144,6 +144,9 @@
   <ItemGroup>
     <Image Include="textures\golden_dragon.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="defines.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
