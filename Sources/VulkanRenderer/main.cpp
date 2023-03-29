@@ -25,6 +25,7 @@
 #include "defines.hpp"
 #include "Vertex.hpp"
 #include "ValidationLayers.hpp"
+#include "Instance.hpp"
 
 const std::vector<Vertex> vertices = {
     {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
@@ -62,7 +63,7 @@ struct UniformBufferObject {
     alignas(16) glm::mat4 proj;
 };
 
-class HelloTriangleApplication {
+class VulkanRendererApplication {
 public:
     void run() {
         initWindow();
@@ -73,7 +74,7 @@ public:
 
 private:
     GLFWwindow* window;
-    VkInstance instance;
+    Instance instance;
 
     // Validation layers
     ValidationLayers validationLayers;
@@ -139,13 +140,13 @@ private:
     }
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
+        auto app = reinterpret_cast<VulkanRendererApplication*>(glfwGetWindowUserPointer(window));
         app->framebufferResized = true;
     }
 
     void initVulkan() {
-        createInstance();
-        validationLayers.setupDebugMessenger(instance);
+        instance.createInstance(validationLayers);
+        validationLayers.setupDebugMessenger(*instance.getVulkanInstancePtr());
         createSurface();
         pickPhysicalDevice();
         createLogicalDevice();
@@ -1058,7 +1059,7 @@ private:
     }
 
     void createSurface() {
-        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+        if (glfwCreateWindowSurface(*instance.getVulkanInstancePtr(), window, nullptr, &surface) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create window surface !");
         }
     }
@@ -1110,14 +1111,14 @@ private:
 
     void pickPhysicalDevice() {
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(*instance.getVulkanInstancePtr(), &deviceCount, nullptr);
 
         if (deviceCount == 0) {
             throw std::runtime_error("Failed to find GPUs with Vulkan Support !");
         }
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(*instance.getVulkanInstancePtr(), &deviceCount, devices.data());
 
         for (const auto& device : devices) {
             if (isDeviceSuitable(device)) {
@@ -1340,69 +1341,15 @@ private:
         vkDestroyDevice(device, nullptr);
 
         if (validationLayers.isValidationLayerEnable()) {
-            validationLayers.DestroyDebugUtilsMessengerEXT(instance, nullptr);
+            validationLayers.DestroyDebugUtilsMessengerEXT(*instance.getVulkanInstancePtr(), nullptr);
         }
 
-        vkDestroySurfaceKHR(instance, surface, nullptr);
-        vkDestroyInstance(instance, nullptr);
+        vkDestroySurfaceKHR(*instance.getVulkanInstancePtr(), surface, nullptr);
+        vkDestroyInstance(*instance.getVulkanInstancePtr(), nullptr);
 
         glfwDestroyWindow(window);
 
         glfwTerminate();
-    }
-
-    void createInstance() {
-        if (validationLayers.isValidationLayerEnable() && !validationLayers.checkValidationLayerSupport()) {
-            throw std::runtime_error("Validation layers request, but not available !");
-        }
-
-        VkApplicationInfo appInfo{};
-        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "Hello Triangle";
-        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = "No Engine";
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_0;
-
-        VkInstanceCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        createInfo.pApplicationInfo = &appInfo;
-
-        auto extensions = getRequiredExtensions();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-        createInfo.ppEnabledExtensionNames = extensions.data();
-
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-        if (validationLayers.isValidationLayerEnable()) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.validationLayersName.size());
-            createInfo.ppEnabledLayerNames = validationLayers.validationLayersName.data();
-
-            validationLayers.populateDebugMessengerCreateInfo(debugCreateInfo);
-            createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-        }
-        else {
-            createInfo.enabledLayerCount = 0;
-
-            createInfo.pNext = nullptr;
-        }
-
-        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create instance !");
-        }
-    }
-
-    std::vector<const char*> getRequiredExtensions() {
-        uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-        if (validationLayers.isValidationLayerEnable()) {
-            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        }
-
-        return extensions;
     }
 
     static std::vector<char> readFile(const std::string& filename) {
@@ -1427,7 +1374,7 @@ private:
 };
 
 int main() {
-    HelloTriangleApplication app;
+    VulkanRendererApplication app;
 
     try {
         app.run();

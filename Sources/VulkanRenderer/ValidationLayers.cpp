@@ -79,7 +79,7 @@ void ValidationLayers::DestroyDebugUtilsMessengerEXT(VkInstance instance, const 
     }
 }
 
-bool ValidationLayers::isValidationLayerEnable() {
+const bool ValidationLayers::isValidationLayerEnable() {
     return enableValidationLayers;
 }
 

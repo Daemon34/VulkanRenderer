@@ -28,7 +28,7 @@ public:
 
     void DestroyDebugUtilsMessengerEXT(VkInstance instance, const VkAllocationCallbacks* pAllocator);
 
-    bool isValidationLayerEnable();
+    const bool isValidationLayerEnable();
 
     VkDebugUtilsMessengerEXT getDebugMessenger();
 
