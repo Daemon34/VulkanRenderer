@@ -26,6 +26,7 @@
 #include "Vertex.hpp"
 #include "ValidationLayers.hpp"
 #include "Instance.hpp"
+#include "Window.hpp"
 
 const std::vector<Vertex> vertices = {
     {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
@@ -66,15 +67,15 @@ struct UniformBufferObject {
 class VulkanRendererApplication {
 public:
     void run() {
-        initWindow();
+        window.initWindow();
         initVulkan();
         mainLoop();
         cleanup();
     }
 
 private:
-    GLFWwindow* window;
     Instance instance;
+    Window window;
 
     // Validation layers
     ValidationLayers validationLayers;
@@ -104,8 +105,6 @@ private:
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
 
-    bool framebufferResized = false;
-
     uint32_t currentFrame = 0;
 
     // TODO : Use only one VkBuffer with offset : https://developer.nvidia.com/vulkan-memory-management
@@ -125,24 +124,6 @@ private:
     VkDeviceMemory textureImageMemory;
     VkImageView textureImageView;
     VkSampler textureSampler;
-
-    void initWindow() {
-        // Initialize GLFW library
-        glfwInit();
-
-        // Avoid to create an OpenGL context since we are using Vulkan
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-        // Create a Window named Vulkan, without specifying on which monitor. The last parameter is only for OpenGL so we don't need it
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-        glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    }
-
-    static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto app = reinterpret_cast<VulkanRendererApplication*>(glfwGetWindowUserPointer(window));
-        app->framebufferResized = true;
-    }
 
     void initVulkan() {
         instance.createInstance(validationLayers);
@@ -921,9 +902,9 @@ private:
     void recreateSwapChain() {
         // Special resize case : Minimzation
         int width = 0, height = 0;
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(window.getGLFWwindowPtr(), &width, &height);
         while (width == 0 || height == 0) {
-            glfwGetFramebufferSize(window, &width, &height);
+            glfwGetFramebufferSize(window.getGLFWwindowPtr(), &width, &height);
             glfwWaitEvents();
         }
         
@@ -1020,7 +1001,7 @@ private:
         }
         else {
             int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
+            glfwGetFramebufferSize(window.getGLFWwindowPtr(), &width, &height);
 
             VkExtent2D actualExtent = {
                 static_cast<uint32_t>(width),
@@ -1059,7 +1040,7 @@ private:
     }
 
     void createSurface() {
-        if (glfwCreateWindowSurface(*instance.getVulkanInstancePtr(), window, nullptr, &surface) != VK_SUCCESS) {
+        if (glfwCreateWindowSurface(*instance.getVulkanInstancePtr(), window.getGLFWwindowPtr(), nullptr, &surface) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create window surface !");
         }
     }
@@ -1198,7 +1179,7 @@ private:
 
     void mainLoop() {
         // Keep running until we close the window
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(window.getGLFWwindowPtr())) {
             glfwPollEvents();
             drawFrame();
         }
@@ -1260,8 +1241,8 @@ private:
         presentInfo.pResults = nullptr;
 
         result = vkQueuePresentKHR(presentationQueue, &presentInfo);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-            framebufferResized = false;
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window.isFrameBufferResized()) {
+            window.setFrameBufferResized(false);
             recreateSwapChain();
         }
         else if (result != VK_SUCCESS) {
@@ -1347,7 +1328,7 @@ private:
         vkDestroySurfaceKHR(*instance.getVulkanInstancePtr(), surface, nullptr);
         vkDestroyInstance(*instance.getVulkanInstancePtr(), nullptr);
 
-        glfwDestroyWindow(window);
+        glfwDestroyWindow(window.getGLFWwindowPtr());
 
         glfwTerminate();
     }

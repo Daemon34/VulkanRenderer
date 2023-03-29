@@ -139,6 +139,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ValidationLayers.cpp" />
     <ClCompile Include="Vertex.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag" />
@@ -152,6 +153,7 @@
     <ClInclude Include="Instance.hpp" />
     <ClInclude Include="ValidationLayers.hpp" />
     <ClInclude Include="Vertex.hpp" />
+    <ClInclude Include="Window.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
