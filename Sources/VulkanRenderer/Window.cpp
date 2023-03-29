@@ -1,5 +1,4 @@
 #include "Window.hpp"
-
 #include "defines.hpp";
 #include <stdexcept>
 

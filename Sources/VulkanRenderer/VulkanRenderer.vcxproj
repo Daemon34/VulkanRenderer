@@ -137,6 +137,9 @@
   <ItemGroup>
     <ClCompile Include="Instance.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PhysicalDevice.cpp" />
+    <ClCompile Include="QueueFamilyIndices.cpp" />
+    <ClCompile Include="SwapChainSupportDetails.cpp" />
     <ClCompile Include="ValidationLayers.cpp" />
     <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -151,6 +154,9 @@
   <ItemGroup>
     <ClInclude Include="defines.hpp" />
     <ClInclude Include="Instance.hpp" />
+    <ClInclude Include="PhysicalDevice.hpp" />
+    <ClInclude Include="QueueFamilyIndices.hpp" />
+    <ClInclude Include="SwapChainSupportDetails.hpp" />
     <ClInclude Include="ValidationLayers.hpp" />
     <ClInclude Include="Vertex.hpp" />
     <ClInclude Include="Window.hpp" />
