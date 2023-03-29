@@ -128,7 +128,7 @@ private:
     void initVulkan() {
         instance.createInstance(validationLayers);
         validationLayers.setupDebugMessenger(*instance.getVulkanInstancePtr());
-        createSurface();
+        window.createSurface(*instance.getVulkanInstancePtr());
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
@@ -933,7 +933,7 @@ private:
 
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = surface;
+        createInfo.surface = *window.getSurfacePtr();
         createInfo.minImageCount = imageCount;
         createInfo.imageFormat = surfaceFormat.format;
         createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -1018,31 +1018,25 @@ private:
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
         SwapChainSupportDetails details;
 
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, *window.getSurfacePtr(), &details.capabilities);
 
         uint32_t formatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, *window.getSurfacePtr(), &formatCount, nullptr);
 
         if (formatCount != 0) {
             details.formats.resize(formatCount);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, *window.getSurfacePtr(), &formatCount, details.formats.data());
         }
 
         uint32_t presentationModeCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentationModeCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, *window.getSurfacePtr(), &presentationModeCount, nullptr);
 
         if (presentationModeCount != 0) {
             details.presentModes.resize(presentationModeCount);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentationModeCount, details.presentModes.data());
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, *window.getSurfacePtr(), &presentationModeCount, details.presentModes.data());
         }
 
         return details;
-    }
-
-    void createSurface() {
-        if (glfwCreateWindowSurface(*instance.getVulkanInstancePtr(), window.getGLFWwindowPtr(), nullptr, &surface) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create window surface !");
-        }
     }
 
     void createLogicalDevice() {
@@ -1162,7 +1156,7 @@ private:
             }
 
             VkBool32 presentSupport = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(device, indicesIndex, surface, &presentSupport);
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, indicesIndex, *window.getSurfacePtr(), &presentSupport);
 
             if (presentSupport) {
                 indices.presentFamily = indicesIndex;
@@ -1325,7 +1319,7 @@ private:
             validationLayers.DestroyDebugUtilsMessengerEXT(*instance.getVulkanInstancePtr(), nullptr);
         }
 
-        vkDestroySurfaceKHR(*instance.getVulkanInstancePtr(), surface, nullptr);
+        vkDestroySurfaceKHR(*instance.getVulkanInstancePtr(), *window.getSurfacePtr(), nullptr);
         vkDestroyInstance(*instance.getVulkanInstancePtr(), nullptr);
 
         glfwDestroyWindow(window.getGLFWwindowPtr());
@@ -1350,8 +1344,6 @@ private:
 
         return buffer;
     }
-
-    VkSurfaceKHR surface;
 };
 
 int main() {

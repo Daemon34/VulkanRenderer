@@ -1,6 +1,7 @@
 #include "Window.hpp"
 
 #include "defines.hpp";
+#include <stdexcept>
 
 void Window::initWindow() {
     // Initialize GLFW library
@@ -20,6 +21,12 @@ void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height
     appWindow->framebufferResized = true;
 }
 
+void Window::createSurface(const VkInstance& instance) {
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create window surface !");
+    }
+}
+
 GLFWwindow* Window::getGLFWwindowPtr() {
     return window;
 }
@@ -30,4 +37,8 @@ bool Window::isFrameBufferResized() {
 
 void Window::setFrameBufferResized(bool value) {
     framebufferResized = value;
+}
+
+VkSurfaceKHR* Window::getSurfacePtr() {
+    return &surface;
 }
