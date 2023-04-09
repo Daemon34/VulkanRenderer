@@ -12,7 +12,7 @@ public:
 
     static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
 
-    glm::vec2 getVertexPosition() {
+    glm::vec3 getVertexPosition() {
         return _pos;
     };
 
@@ -24,7 +24,7 @@ public:
         return _texCoord;
     };
 
-    glm::vec2 _pos;
+    glm::vec3 _pos;
     glm::vec3 _color;
     glm::vec2 _texCoord;
 };
